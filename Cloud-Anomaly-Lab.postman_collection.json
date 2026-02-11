@@ -1,0 +1,273 @@
+{
+  "info": {
+    "_postman_id": "d8f2d771-0fd0-4b1b-a710-f0f88bc59eb0",
+    "name": "Cloud Anomaly Lab",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for python-projects-anomalies FastAPI app."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Anomaly Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/anomaly/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "anomaly",
+                "status"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CPU Anomaly",
+      "item": [
+        {
+          "name": "CPU Heavy (default)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/anomaly/cpu",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "anomaly",
+                "cpu"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CPU Heavy (custom iterations)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/anomaly/cpu?iterations=5000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "anomaly",
+                "cpu"
+              ],
+              "query": [
+                {
+                  "key": "iterations",
+                  "value": "5000000"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Memory Anomaly",
+      "item": [
+        {
+          "name": "Memory Leak (default chunk)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/anomaly/memory",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "anomaly",
+                "memory"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Memory Leak (custom size)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/anomaly/memory?size_kb=2048",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "anomaly",
+                "memory"
+              ],
+              "query": [
+                {
+                  "key": "size_kb",
+                  "value": "2048"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Memory Clear",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/anomaly/memory/clear",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "anomaly",
+                "memory",
+                "clear"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Network Anomaly",
+      "item": [
+        {
+          "name": "Network Egress (default)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/anomaly/network",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "anomaly",
+                "network"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Network Egress (custom count/url)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/anomaly/network?count=10&url=https://httpbin.org/get",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "anomaly",
+                "network"
+              ],
+              "query": [
+                {
+                  "key": "count",
+                  "value": "10"
+                },
+                {
+                  "key": "url",
+                  "value": "https://httpbin.org/get"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Logging Anomaly",
+      "item": [
+        {
+          "name": "Logging Spike (default)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/anomaly/logging",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "anomaly",
+                "logging"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Logging Spike (custom size)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/anomaly/logging?size_kb=100",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "anomaly",
+                "logging"
+              ],
+              "query": [
+                {
+                  "key": "size_kb",
+                  "value": "100"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
