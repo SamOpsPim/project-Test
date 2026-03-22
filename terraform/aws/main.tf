@@ -61,9 +61,9 @@ resource "aws_security_group" "lab" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(var.common_tags, {
     Name = "${var.project_name}-sg"
-  }
+  })
 }
 
 resource "aws_instance" "lab" {
@@ -79,7 +79,7 @@ resource "aws_instance" "lab" {
     volume_type = "gp3"
   }
 
-  tags = {
+  tags = merge(var.common_tags, {
     Name = "${var.project_name}-vm"
-  }
+  })
 }
