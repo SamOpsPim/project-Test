@@ -29,7 +29,23 @@ variable "ssh_public_key" {
 }
 
 variable "allowed_source_addresses" {
-  description = "CIDRs allowed for SSH and port 8000 (use /32 for your IP in production)"
+  description = "CIDRs allowed for SSH and port 8000 — must be explicitly set to a restricted range"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = !contains(var.allowed_source_addresses, "0.0.0.0/0")
+    error_message = "Unrestricted access (0.0.0.0/0) is not allowed. Specify trusted CIDR blocks, e.g. [\"203.0.113.10/32\"]."
+  }
+}
+
+variable "common_tags" {
+  description = "Common tags applied to all Azure resources for cost allocation and management"
+  type        = map(string)
+  default = {
+    Project     = "cloud-anomaly-lab"
+    Environment = "lab"
+    Owner       = "devops-team"
+    CostCenter  = "engineering"
+    ManagedBy   = "terraform"
+  }
 }

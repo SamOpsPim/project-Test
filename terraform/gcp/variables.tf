@@ -40,13 +40,33 @@ variable "ssh_public_key" {
 }
 
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "CIDRs allowed to reach port 8000 — must be explicitly set to a restricted range"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = !contains(var.app_source_ranges, "0.0.0.0/0")
+    error_message = "Unrestricted access (0.0.0.0/0) is not allowed. Specify trusted CIDR blocks, e.g. [\"203.0.113.10/32\"]."
+  }
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "CIDRs allowed for SSH — must be explicitly set to a restricted range"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = !contains(var.ssh_source_ranges, "0.0.0.0/0")
+    error_message = "Unrestricted access (0.0.0.0/0) is not allowed. Specify trusted CIDR blocks, e.g. [\"203.0.113.10/32\"]."
+  }
+}
+
+variable "common_labels" {
+  description = "Common labels applied to all GCP resources for cost allocation and management"
+  type        = map(string)
+  default = {
+    project     = "cloud-anomaly-lab"
+    environment = "lab"
+    owner       = "devops-team"
+    cost_center = "engineering"
+    managed_by  = "terraform"
+  }
 }

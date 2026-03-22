@@ -17,13 +17,29 @@ variable "instance_type" {
 }
 
 variable "ssh_cidr_blocks" {
-  description = "CIDRs allowed for SSH and app port (restrict in production)"
+  description = "CIDRs allowed for SSH and app port — must be explicitly set to a restricted range"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = !contains(var.ssh_cidr_blocks, "0.0.0.0/0")
+    error_message = "Unrestricted access (0.0.0.0/0) is not allowed. Specify trusted CIDR blocks, e.g. [\"203.0.113.10/32\"]."
+  }
 }
 
 variable "public_key" {
   description = "SSH public key material for EC2 access"
   type        = string
   sensitive   = true
+}
+
+variable "common_tags" {
+  description = "Common tags applied to all AWS resources for cost allocation and management"
+  type        = map(string)
+  default = {
+    Project     = "cloud-anomaly-lab"
+    Environment = "lab"
+    Owner       = "devops-team"
+    CostCenter  = "engineering"
+    ManagedBy   = "terraform"
+  }
 }
