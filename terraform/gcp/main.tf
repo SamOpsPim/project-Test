@@ -34,7 +34,8 @@ resource "google_compute_instance" "lab" {
   machine_type = var.machine_type
   zone         = var.gcp_zone
 
-  tags = [var.project_name]
+  tags   = [var.project_name]
+  labels = var.common_labels
 
   boot_disk {
     initialize_params {
