@@ -1,3 +1,16 @@
+locals {
+  common_labels = merge(
+    {
+      project     = var.project_name
+      environment = var.environment
+      owner       = var.owner
+      managed-by  = "terraform"
+    },
+    var.cost_center != "" ? { cost-center = var.cost_center } : {},
+    var.extra_labels,
+  )
+}
+
 resource "google_compute_network" "lab" {
   name                    = "${var.project_name}-vpc"
   auto_create_subnetworks = true
@@ -34,13 +47,15 @@ resource "google_compute_instance" "lab" {
   machine_type = var.machine_type
   zone         = var.gcp_zone
 
-  tags = [var.project_name]
+  tags   = [var.project_name]
+  labels = local.common_labels
 
   boot_disk {
     initialize_params {
-      image = "ubuntu-os-cloud/ubuntu-2204-lts"
-      size  = 20
-      type  = "pd-balanced"
+      image  = "ubuntu-os-cloud/ubuntu-2204-lts"
+      size   = 20
+      type   = "pd-balanced"
+      labels = local.common_labels
     }
   }
 

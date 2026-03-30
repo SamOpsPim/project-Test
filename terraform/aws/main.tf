@@ -1,3 +1,16 @@
+locals {
+  common_tags = merge(
+    {
+      Project     = var.project_name
+      Environment = var.environment
+      Owner       = var.owner
+      ManagedBy   = "terraform"
+    },
+    var.cost_center != "" ? { CostCenter = var.cost_center } : {},
+    var.extra_tags,
+  )
+}
+
 data "aws_vpc" "default" {
   default = true
 }
@@ -32,14 +45,18 @@ data "aws_ami" "ubuntu" {
 resource "aws_key_pair" "lab" {
   key_name   = "${var.project_name}-key"
   public_key = var.public_key
+
+  tags = merge(local.common_tags, {
+    Name = "${var.project_name}-key"
+  })
 }
 
 resource "aws_security_group" "lab" {
   name        = "${var.project_name}-sg"
-  description = "SSH + app port 8000"
+  description = "Restricted SSH + app port 8000 access from trusted CIDRs only"
 
   ingress {
-    description = "SSH"
+    description = "SSH from trusted CIDRs"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -47,7 +64,7 @@ resource "aws_security_group" "lab" {
   }
 
   ingress {
-    description = "FastAPI lab"
+    description = "FastAPI lab app from trusted CIDRs"
     from_port   = 8000
     to_port     = 8000
     protocol    = "tcp"
@@ -61,9 +78,9 @@ resource "aws_security_group" "lab" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${var.project_name}-sg"
-  }
+  })
 }
 
 resource "aws_instance" "lab" {
@@ -73,13 +90,22 @@ resource "aws_instance" "lab" {
   subnet_id                   = data.aws_subnets.default.ids[0]
   vpc_security_group_ids      = [aws_security_group.lab.id]
   associate_public_ip_address = true
+  monitoring                  = true
+
+  metadata_options {
+    http_tokens = "required"
+  }
 
   root_block_device {
     volume_size = 20
     volume_type = "gp3"
+
+    tags = merge(local.common_tags, {
+      Name = "${var.project_name}-root-vol"
+    })
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${var.project_name}-vm"
-  }
+  })
 }
