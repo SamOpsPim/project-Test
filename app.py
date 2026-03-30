@@ -3,6 +3,7 @@ import gc
 import hashlib
 import logging
 import os
+from contextlib import asynccontextmanager
 from typing import Any
 
 import requests
@@ -43,6 +44,7 @@ BACKGROUND_INTERVAL_SECONDS = env_int("BACKGROUND_INTERVAL_SECONDS", 60)
 BACKGROUND_CPU_ITERATIONS = env_int("BACKGROUND_CPU_ITERATIONS", 350_000)
 
 LOG_FILE_PATH = os.getenv("LOG_FILE_PATH", "app.log")
+HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", 8000))
 
 logging.basicConfig(
@@ -55,7 +57,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger("anomaly-app")
 
-app = FastAPI(title="Cloud Anomaly Lab App")
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    task = asyncio.create_task(background_worker())
+    application.state.background_task = task
+    yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+
+app = FastAPI(title="Cloud Anomaly Lab App", lifespan=lifespan)
 
 # ANOMALY: Memory growth. This list intentionally keeps growing.
 memory_bucket: list[bytes] = []
@@ -188,21 +203,5 @@ async def background_worker() -> None:
             logger.info("background_task checksum=%s", checksum)
 
 
-@app.on_event("startup")
-async def startup_event() -> None:
-    app.state.background_task = asyncio.create_task(background_worker())
-
-
-@app.on_event("shutdown")
-async def shutdown_event() -> None:
-    task = getattr(app.state, "background_task", None)
-    if task is not None:
-        task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
-
-
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=PORT)
+    uvicorn.run(app, host=HOST, port=PORT)

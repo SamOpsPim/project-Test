@@ -1,6 +1,20 @@
+locals {
+  common_tags = merge(
+    {
+      Project     = var.project_name
+      Environment = var.environment
+      Owner       = var.owner
+      ManagedBy   = "terraform"
+    },
+    var.cost_center != "" ? { CostCenter = var.cost_center } : {},
+    var.extra_tags,
+  )
+}
+
 resource "azurerm_resource_group" "lab" {
   name     = "${var.project_name}-rg"
   location = var.location
+  tags     = local.common_tags
 }
 
 resource "azurerm_virtual_network" "lab" {
@@ -8,6 +22,7 @@ resource "azurerm_virtual_network" "lab" {
   address_space       = ["10.42.0.0/16"]
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = local.common_tags
 }
 
 resource "azurerm_subnet" "lab" {
@@ -23,6 +38,7 @@ resource "azurerm_public_ip" "lab" {
   resource_group_name = azurerm_resource_group.lab.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  tags                = local.common_tags
 }
 
 resource "azurerm_network_security_group" "lab" {
@@ -53,6 +69,8 @@ resource "azurerm_network_security_group" "lab" {
     source_address_prefixes    = var.allowed_source_addresses
     destination_address_prefix = "*"
   }
+
+  tags = local.common_tags
 }
 
 resource "azurerm_network_interface" "lab" {
@@ -66,10 +84,12 @@ resource "azurerm_network_interface" "lab" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.lab.id
   }
+
+  tags = local.common_tags
 }
 
 resource "azurerm_network_interface_security_group_association" "lab" {
-  network_interface_id    = azurerm_network_interface.lab.id
+  network_interface_id      = azurerm_network_interface.lab.id
   network_security_group_id = azurerm_network_security_group.lab.id
 }
 
@@ -107,4 +127,8 @@ resource "azurerm_linux_virtual_machine" "lab" {
   }
 
   disable_password_authentication = true
+
+  tags = merge(local.common_tags, {
+    Name = "${var.project_name}-vm"
+  })
 }
