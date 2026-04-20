@@ -1,6 +1,22 @@
+locals {
+  common_tags = merge(
+    {
+      Project     = var.project_name
+      Environment = var.environment
+      Owner       = var.owner
+      CostCenter  = var.cost_center
+    },
+    var.extra_tags
+  )
+
+  app_source_prefixes = coalesce(var.allowed_app_source_addresses, var.allowed_source_addresses)
+}
+
 resource "azurerm_resource_group" "lab" {
   name     = "${var.project_name}-rg"
   location = var.location
+
+  tags = local.common_tags
 }
 
 resource "azurerm_virtual_network" "lab" {
@@ -8,6 +24,8 @@ resource "azurerm_virtual_network" "lab" {
   address_space       = ["10.42.0.0/16"]
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+
+  tags = local.common_tags
 }
 
 resource "azurerm_subnet" "lab" {
@@ -22,7 +40,9 @@ resource "azurerm_public_ip" "lab" {
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
   allocation_method   = "Static"
-  sku                 = "Standard"
+  sku                 = "Basic"
+
+  tags = local.common_tags
 }
 
 resource "azurerm_network_security_group" "lab" {
@@ -50,9 +70,11 @@ resource "azurerm_network_security_group" "lab" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "8000"
-    source_address_prefixes    = var.allowed_source_addresses
+    source_address_prefixes    = local.app_source_prefixes
     destination_address_prefix = "*"
   }
+
+  tags = local.common_tags
 }
 
 resource "azurerm_network_interface" "lab" {
@@ -66,10 +88,12 @@ resource "azurerm_network_interface" "lab" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.lab.id
   }
+
+  tags = local.common_tags
 }
 
 resource "azurerm_network_interface_security_group_association" "lab" {
-  network_interface_id    = azurerm_network_interface.lab.id
+  network_interface_id      = azurerm_network_interface.lab.id
   network_security_group_id = azurerm_network_security_group.lab.id
 }
 
@@ -107,4 +131,6 @@ resource "azurerm_linux_virtual_machine" "lab" {
   }
 
   disable_password_authentication = true
+
+  tags = local.common_tags
 }

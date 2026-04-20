@@ -40,13 +40,45 @@ variable "ssh_public_key" {
 }
 
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "Trusted CIDRs for port 8000 (never use 0.0.0.0/0 for SSH; app may use LB/WAF for public access)"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = length(var.app_source_ranges) > 0 && !contains(var.app_source_ranges, "0.0.0.0/0") && !contains(var.app_source_ranges, "::/0")
+    error_message = "app_source_ranges must be non-empty and must not include 0.0.0.0/0 or ::/0."
+  }
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "Trusted CIDRs for SSH (never use 0.0.0.0/0; prefer IAP or OS Login)"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = length(var.ssh_source_ranges) > 0 && !contains(var.ssh_source_ranges, "0.0.0.0/0") && !contains(var.ssh_source_ranges, "::/0")
+    error_message = "ssh_source_ranges must be non-empty and must not include 0.0.0.0/0 or ::/0."
+  }
+}
+
+variable "environment" {
+  description = "Environment name for cost allocation labels"
+  type        = string
+  default     = "lab"
+}
+
+variable "owner" {
+  description = "Owner contact for cost allocation labels"
+  type        = string
+  default     = "unset"
+}
+
+variable "cost_center" {
+  description = "Cost center identifier for cost allocation labels"
+  type        = string
+  default     = "unset"
+}
+
+variable "extra_labels" {
+  description = "Additional labels merged into labelable resources"
+  type        = map(string)
+  default     = {}
 }

@@ -1,6 +1,10 @@
-location                   = "westeurope"
-project_name               = "cloud-anomaly-lab"
-vm_size                    = "Standard_B1s"
-admin_username             = "azureuser"
-ssh_public_key             = "ssh-ed25519 AAAA... your-public-key"
-allowed_source_addresses   = ["0.0.0.0/0"] # e.g. ["203.0.113.10/32"] for your IP only
+location                 = "westeurope"
+project_name             = "cloud-anomaly-lab"
+vm_size                  = "Standard_B1s"
+admin_username           = "azureuser"
+ssh_public_key           = "ssh-ed25519 AAAA... your-public-key"
+allowed_source_addresses = ["198.51.100.10/32"] # replace with trusted CIDRs; 0.0.0.0/0 is rejected
+# allowed_app_source_addresses = ["198.51.100.0/24"] # optional; defaults to allowed_source_addresses
+environment              = "lab"
+owner                    = "team@example.com"
+cost_center              = "engineering"

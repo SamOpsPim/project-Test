@@ -1,3 +1,7 @@
+locals {
+  app_ingress_cidrs = coalesce(var.app_cidr_blocks, var.ssh_cidr_blocks)
+}
+
 data "aws_vpc" "default" {
   default = true
 }
@@ -51,7 +55,7 @@ resource "aws_security_group" "lab" {
     from_port   = 8000
     to_port     = 8000
     protocol    = "tcp"
-    cidr_blocks = var.ssh_cidr_blocks
+    cidr_blocks = local.app_ingress_cidrs
   }
 
   egress {
@@ -61,9 +65,16 @@ resource "aws_security_group" "lab" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "${var.project_name}-sg"
-  }
+  tags = merge(
+    {
+      Name        = "${var.project_name}-sg"
+      Project     = var.project_name
+      Environment = var.environment
+      Owner       = var.owner
+      CostCenter  = var.cost_center
+    },
+    var.extra_tags
+  )
 }
 
 resource "aws_instance" "lab" {
@@ -79,7 +90,14 @@ resource "aws_instance" "lab" {
     volume_type = "gp3"
   }
 
-  tags = {
-    Name = "${var.project_name}-vm"
-  }
+  tags = merge(
+    {
+      Name        = "${var.project_name}-vm"
+      Project     = var.project_name
+      Environment = var.environment
+      Owner       = var.owner
+      CostCenter  = var.cost_center
+    },
+    var.extra_tags
+  )
 }
