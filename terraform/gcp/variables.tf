@@ -40,13 +40,37 @@ variable "ssh_public_key" {
 }
 
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "CIDRs allowed to reach port 8000 (never use 0.0.0.0/0)"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition = alltrue([
+      for c in var.app_source_ranges :
+      !contains(["0.0.0.0/0", "::/0"], c)
+    ])
+    error_message = "app_source_ranges must not use open CIDRs 0.0.0.0/0 or ::/0. Set explicit trusted CIDRs (e.g. your public IP /32)."
+  }
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "CIDRs allowed for SSH (never use 0.0.0.0/0)"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition = alltrue([
+      for c in var.ssh_source_ranges :
+      !contains(["0.0.0.0/0", "::/0"], c)
+    ])
+    error_message = "ssh_source_ranges must not use open CIDRs 0.0.0.0/0 or ::/0. Set explicit trusted CIDRs (e.g. your public IP /32)."
+  }
+}
+
+variable "common_tags" {
+  description = "Cost allocation metadata; applied as Compute Engine labels (lowercased keys/values)"
+  type        = map(string)
+  default = {
+    Environment = "lab"
+    CostCenter  = "devops"
+    Owner       = "platform"
+  }
 }
