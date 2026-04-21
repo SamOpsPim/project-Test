@@ -1,6 +1,8 @@
 resource "azurerm_resource_group" "lab" {
   name     = "${var.project_name}-rg"
   location = var.location
+
+  tags = { Name = "${var.project_name}-rg" }
 }
 
 resource "azurerm_virtual_network" "lab" {
@@ -8,6 +10,8 @@ resource "azurerm_virtual_network" "lab" {
   address_space       = ["10.42.0.0/16"]
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+
+  tags = { Name = "${var.project_name}-vnet" }
 }
 
 resource "azurerm_subnet" "lab" {
@@ -23,6 +27,8 @@ resource "azurerm_public_ip" "lab" {
   resource_group_name = azurerm_resource_group.lab.name
   allocation_method   = "Static"
   sku                 = "Standard"
+
+  tags = { Name = "${var.project_name}-pip" }
 }
 
 resource "azurerm_network_security_group" "lab" {
@@ -53,6 +59,8 @@ resource "azurerm_network_security_group" "lab" {
     source_address_prefixes    = var.allowed_source_addresses
     destination_address_prefix = "*"
   }
+
+  tags = { Name = "${var.project_name}-nsg" }
 }
 
 resource "azurerm_network_interface" "lab" {
@@ -66,6 +74,8 @@ resource "azurerm_network_interface" "lab" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.lab.id
   }
+
+  tags = { Name = "${var.project_name}-nic" }
 }
 
 resource "azurerm_network_interface_security_group_association" "lab" {
@@ -107,4 +117,6 @@ resource "azurerm_linux_virtual_machine" "lab" {
   }
 
   disable_password_authentication = true
+
+  tags = { Name = "${var.project_name}-vm" }
 }
