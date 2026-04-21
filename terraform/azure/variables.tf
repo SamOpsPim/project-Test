@@ -29,7 +29,24 @@ variable "ssh_public_key" {
 }
 
 variable "allowed_source_addresses" {
-  description = "CIDRs allowed for SSH and port 8000 (use /32 for your IP in production)"
+  description = "CIDRs allowed for SSH and port 8000 (set to your IP /32 or VPN range; never use * or 0.0.0.0/0)"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition = alltrue([
+      for a in var.allowed_source_addresses :
+      a != "*" && a != "0.0.0.0/0" && a != "Internet" && a != "::/0"
+    ])
+    error_message = "allowed_source_addresses must list explicit CIDRs (e.g. 203.0.113.10/32). Wildcard / Internet sources are not allowed."
+  }
+}
+
+variable "common_tags" {
+  description = "Cost allocation and governance tags applied to supported resources (also merged into provider default_tags)"
+  type        = map(string)
+  default = {
+    Environment = "lab"
+    CostCenter  = "devops"
+    Owner       = "platform"
+  }
 }

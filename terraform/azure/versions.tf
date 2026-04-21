@@ -15,4 +15,11 @@ terraform {
 
 provider "azurerm" {
   features {}
+
+  default_tags {
+    tags = merge(
+      var.common_tags,
+      { Project = var.project_name },
+    )
+  }
 }
