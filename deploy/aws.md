@@ -10,7 +10,7 @@
 In the EC2 Security Group, add inbound rule:
 - Type: Custom TCP
 - Port: `8000`
-- Source: your IP (recommended for lab) or `0.0.0.0/0` (open)
+- Source: a trusted CIDR only (for example your public IP as `x.x.x.x/32`). Do not use `0.0.0.0/0` for SSH or the app port in shared environments.
 
 ## 3) SSH to VM
 

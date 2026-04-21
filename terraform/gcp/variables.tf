@@ -22,9 +22,27 @@ variable "project_name" {
 }
 
 variable "machine_type" {
-  description = "Compute Engine machine type"
+  description = "Compute Engine machine type (override after monitoring if you need more capacity)"
   type        = string
-  default     = "e2-micro"
+  default     = "f1-micro"
+}
+
+variable "environment" {
+  description = "Environment label for cost allocation"
+  type        = string
+  default     = "dev"
+}
+
+variable "owner" {
+  description = "Owner label for cost allocation"
+  type        = string
+  default     = "FinOpsTeam"
+}
+
+variable "cost_center" {
+  description = "Cost center label for cost allocation"
+  type        = string
+  default     = "lab"
 }
 
 variable "ssh_user" {
@@ -40,13 +58,37 @@ variable "ssh_public_key" {
 }
 
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "Trusted CIDRs allowed to reach port 8000"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
+
+  validation {
+    condition     = length(var.app_source_ranges) > 0
+    error_message = "Set app_source_ranges to at least one trusted CIDR (e.g. 203.0.113.10/32)."
+  }
+
+  validation {
+    condition = alltrue([
+      for c in var.app_source_ranges : c != "0.0.0.0/0" && c != "::/0"
+    ])
+    error_message = "Do not use 0.0.0.0/0 or ::/0; specify trusted source CIDRs only."
+  }
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "Trusted CIDRs allowed for SSH"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
+
+  validation {
+    condition     = length(var.ssh_source_ranges) > 0
+    error_message = "Set ssh_source_ranges to at least one trusted CIDR (e.g. 203.0.113.10/32)."
+  }
+
+  validation {
+    condition = alltrue([
+      for c in var.ssh_source_ranges : c != "0.0.0.0/0" && c != "::/0"
+    ])
+    error_message = "Do not use 0.0.0.0/0 or ::/0; specify trusted source CIDRs only."
+  }
 }
