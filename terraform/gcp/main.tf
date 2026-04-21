@@ -1,3 +1,13 @@
+locals {
+  # GCP label values must be lowercase
+  allocation_labels = {
+    project     = lower(var.project_name)
+    environment = lower(var.environment)
+    owner       = lower(var.owner)
+    cost_center = lower(var.cost_center)
+  }
+}
+
 resource "google_compute_network" "lab" {
   name                    = "${var.project_name}-vpc"
   auto_create_subnetworks = true
@@ -14,6 +24,8 @@ resource "google_compute_firewall" "ssh" {
 
   source_ranges = var.ssh_source_ranges
   target_tags   = [var.project_name]
+
+  labels = local.allocation_labels
 }
 
 resource "google_compute_firewall" "app" {
@@ -27,6 +39,8 @@ resource "google_compute_firewall" "app" {
 
   source_ranges = var.app_source_ranges
   target_tags   = [var.project_name]
+
+  labels = local.allocation_labels
 }
 
 resource "google_compute_instance" "lab" {
@@ -35,6 +49,8 @@ resource "google_compute_instance" "lab" {
   zone         = var.gcp_zone
 
   tags = [var.project_name]
+
+  labels = local.allocation_labels
 
   boot_disk {
     initialize_params {
