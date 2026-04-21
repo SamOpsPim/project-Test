@@ -40,13 +40,43 @@ variable "ssh_public_key" {
 }
 
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "CIDRs allowed to reach port 8000. Must not be open to the world."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
+
+  validation {
+    condition     = length(var.app_source_ranges) > 0
+    error_message = "app_source_ranges must contain at least one CIDR (e.g. [\"203.0.113.10/32\"])."
+  }
+
+  validation {
+    condition = alltrue([
+      for c in var.app_source_ranges : !contains(["0.0.0.0/0", "::/0"], c)
+    ])
+    error_message = "app_source_ranges must not include 0.0.0.0/0 or ::/0."
+  }
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "CIDRs allowed for SSH. Must not be open to the world."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
+
+  validation {
+    condition     = length(var.ssh_source_ranges) > 0
+    error_message = "ssh_source_ranges must contain at least one CIDR (e.g. [\"203.0.113.10/32\"])."
+  }
+
+  validation {
+    condition = alltrue([
+      for c in var.ssh_source_ranges : !contains(["0.0.0.0/0", "::/0"], c)
+    ])
+    error_message = "ssh_source_ranges must not include 0.0.0.0/0 or ::/0."
+  }
+}
+
+variable "extra_labels" {
+  description = "Optional extra labels merged with default cost-allocation labels"
+  type        = map(string)
+  default     = {}
 }

@@ -1,11 +1,24 @@
+locals {
+  default_labels = merge(
+    {
+      project     = var.project_name
+      environment = "lab"
+      managed_by  = "terraform"
+    },
+    var.extra_labels
+  )
+}
+
 resource "google_compute_network" "lab" {
   name                    = "${var.project_name}-vpc"
   auto_create_subnetworks = true
+  labels                  = local.default_labels
 }
 
 resource "google_compute_firewall" "ssh" {
   name    = "${var.project_name}-allow-ssh"
   network = google_compute_network.lab.name
+  labels  = local.default_labels
 
   allow {
     protocol = "tcp"
@@ -19,6 +32,7 @@ resource "google_compute_firewall" "ssh" {
 resource "google_compute_firewall" "app" {
   name    = "${var.project_name}-allow-8000"
   network = google_compute_network.lab.name
+  labels  = local.default_labels
 
   allow {
     protocol = "tcp"
@@ -34,7 +48,8 @@ resource "google_compute_instance" "lab" {
   machine_type = var.machine_type
   zone         = var.gcp_zone
 
-  tags = [var.project_name]
+  tags   = [var.project_name]
+  labels = local.default_labels
 
   boot_disk {
     initialize_params {
