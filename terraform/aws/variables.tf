@@ -11,15 +11,45 @@ variable "project_name" {
 }
 
 variable "instance_type" {
-  description = "EC2 instance type"
+  description = "EC2 instance type (override after monitoring if you need more capacity)"
   type        = string
-  default     = "t3.micro"
+  default     = "t3.nano"
+}
+
+variable "environment" {
+  description = "Environment label for cost allocation"
+  type        = string
+  default     = "dev"
+}
+
+variable "owner" {
+  description = "Owner label for cost allocation"
+  type        = string
+  default     = "FinOpsTeam"
+}
+
+variable "cost_center" {
+  description = "Cost center label for cost allocation"
+  type        = string
+  default     = "lab"
 }
 
 variable "ssh_cidr_blocks" {
-  description = "CIDRs allowed for SSH and app port (restrict in production)"
+  description = "Trusted CIDRs allowed for SSH and app port 8000 (must not be open internet)"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
+
+  validation {
+    condition     = length(var.ssh_cidr_blocks) > 0
+    error_message = "Set ssh_cidr_blocks to at least one trusted CIDR (e.g. your office or home /32)."
+  }
+
+  validation {
+    condition = alltrue([
+      for c in var.ssh_cidr_blocks : c != "0.0.0.0/0" && c != "::/0"
+    ])
+    error_message = "Do not use 0.0.0.0/0 or ::/0; specify trusted source CIDRs only."
+  }
 }
 
 variable "public_key" {
