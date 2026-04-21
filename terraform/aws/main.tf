@@ -51,7 +51,7 @@ resource "aws_security_group" "lab" {
     from_port   = 8000
     to_port     = 8000
     protocol    = "tcp"
-    cidr_blocks = var.ssh_cidr_blocks
+    cidr_blocks = var.app_cidr_blocks
   }
 
   egress {
