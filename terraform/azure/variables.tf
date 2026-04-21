@@ -29,7 +29,25 @@ variable "ssh_public_key" {
 }
 
 variable "allowed_source_addresses" {
-  description = "CIDRs allowed for SSH and port 8000 (use /32 for your IP in production)"
+  description = "CIDRs allowed for SSH and port 8000 (use /32 for your IP). Must not be open to the world."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
+
+  validation {
+    condition     = length(var.allowed_source_addresses) > 0
+    error_message = "allowed_source_addresses must contain at least one CIDR (e.g. [\"203.0.113.10/32\"])."
+  }
+
+  validation {
+    condition = alltrue([
+      for c in var.allowed_source_addresses : !contains(["0.0.0.0/0", "::/0", "*"], c)
+    ])
+    error_message = "allowed_source_addresses must not use 0.0.0.0/0, ::/0, or *."
+  }
+}
+
+variable "extra_tags" {
+  description = "Optional extra tags merged with default cost-allocation tags"
+  type        = map(string)
+  default     = {}
 }
