@@ -33,6 +33,30 @@ variable "ssh_user" {
   default     = "ubuntu"
 }
 
+variable "environment" {
+  description = "Cost allocation label (environment)"
+  type        = string
+  default     = "lab"
+}
+
+variable "owner" {
+  description = "Cost allocation label (owner)"
+  type        = string
+  default     = "unset"
+}
+
+variable "cost_center" {
+  description = "Cost allocation label (cost_center)"
+  type        = string
+  default     = "unset"
+}
+
+variable "application" {
+  description = "Cost allocation label (application)"
+  type        = string
+  default     = "cloud-anomaly-lab"
+}
+
 variable "ssh_public_key" {
   description = "SSH public key for instance login"
   type        = string
@@ -40,13 +64,31 @@ variable "ssh_public_key" {
 }
 
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "Non-open CIDRs for TCP 8000 (e.g. [\"203.0.113.10/32\"]). Never use 0.0.0.0/0 unless intentionally public."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
+
+  validation {
+    condition = (
+      length(var.app_source_ranges) > 0 &&
+      !contains(var.app_source_ranges, "0.0.0.0/0") &&
+      !contains(var.app_source_ranges, "::/0")
+    )
+    error_message = "app_source_ranges must be non-empty and must not use 0.0.0.0/0 or ::/0."
+  }
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "Non-open CIDRs for SSH. Never use 0.0.0.0/0."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
+
+  validation {
+    condition = (
+      length(var.ssh_source_ranges) > 0 &&
+      !contains(var.ssh_source_ranges, "0.0.0.0/0") &&
+      !contains(var.ssh_source_ranges, "::/0")
+    )
+    error_message = "ssh_source_ranges must be non-empty and must not use 0.0.0.0/0 or ::/0."
+  }
 }

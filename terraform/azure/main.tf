@@ -1,6 +1,18 @@
+locals {
+  cost_tags = {
+    Environment = var.environment
+    Owner         = var.owner
+    CostCenter    = var.cost_center
+    Application   = var.application
+    ManagedBy     = "terraform"
+    Project       = var.project_name
+  }
+}
+
 resource "azurerm_resource_group" "lab" {
   name     = "${var.project_name}-rg"
   location = var.location
+  tags     = local.cost_tags
 }
 
 resource "azurerm_virtual_network" "lab" {
@@ -8,6 +20,7 @@ resource "azurerm_virtual_network" "lab" {
   address_space       = ["10.42.0.0/16"]
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = local.cost_tags
 }
 
 resource "azurerm_subnet" "lab" {
@@ -23,12 +36,14 @@ resource "azurerm_public_ip" "lab" {
   resource_group_name = azurerm_resource_group.lab.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  tags                = local.cost_tags
 }
 
 resource "azurerm_network_security_group" "lab" {
   name                = "${var.project_name}-nsg"
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = local.cost_tags
 
   security_rule {
     name                       = "SSH"
@@ -38,7 +53,7 @@ resource "azurerm_network_security_group" "lab" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefixes    = var.allowed_source_addresses
+    source_address_prefixes    = var.allowed_ssh_source_addresses
     destination_address_prefix = "*"
   }
 
@@ -50,7 +65,7 @@ resource "azurerm_network_security_group" "lab" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "8000"
-    source_address_prefixes    = var.allowed_source_addresses
+    source_address_prefixes    = var.allowed_app_source_addresses
     destination_address_prefix = "*"
   }
 }
@@ -59,6 +74,7 @@ resource "azurerm_network_interface" "lab" {
   name                = "${var.project_name}-nic"
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = local.cost_tags
 
   ip_configuration {
     name                          = "primary"
@@ -69,7 +85,7 @@ resource "azurerm_network_interface" "lab" {
 }
 
 resource "azurerm_network_interface_security_group_association" "lab" {
-  network_interface_id    = azurerm_network_interface.lab.id
+  network_interface_id      = azurerm_network_interface.lab.id
   network_security_group_id = azurerm_network_security_group.lab.id
 }
 
@@ -83,6 +99,7 @@ resource "azurerm_linux_virtual_machine" "lab" {
   resource_group_name = azurerm_resource_group.lab.name
   size                = var.vm_size
   admin_username      = var.admin_username
+  tags                = local.cost_tags
   network_interface_ids = [
     azurerm_network_interface.lab.id,
   ]
