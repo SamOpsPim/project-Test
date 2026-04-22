@@ -22,14 +22,62 @@ variable "admin_username" {
   default     = "azureuser"
 }
 
+variable "environment" {
+  description = "Cost allocation tag (Environment)"
+  type        = string
+  default     = "lab"
+}
+
+variable "owner" {
+  description = "Cost allocation tag (Owner)"
+  type        = string
+  default     = "unset"
+}
+
+variable "cost_center" {
+  description = "Cost allocation tag (CostCenter)"
+  type        = string
+  default     = "unset"
+}
+
+variable "application" {
+  description = "Cost allocation tag (Application)"
+  type        = string
+  default     = "cloud-anomaly-lab"
+}
+
 variable "ssh_public_key" {
   description = "SSH public key for VM access"
   type        = string
   sensitive   = true
 }
 
-variable "allowed_source_addresses" {
-  description = "CIDRs allowed for SSH and port 8000 (use /32 for your IP in production)"
+variable "allowed_ssh_source_addresses" {
+  description = "Non-open CIDRs for SSH (e.g. [\"203.0.113.10/32\"]). Never use 0.0.0.0/0."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
+
+  validation {
+    condition = (
+      length(var.allowed_ssh_source_addresses) > 0 &&
+      !contains(var.allowed_ssh_source_addresses, "0.0.0.0/0") &&
+      !contains(var.allowed_ssh_source_addresses, "::/0")
+    )
+    error_message = "allowed_ssh_source_addresses must be non-empty and must not use 0.0.0.0/0 or ::/0."
+  }
+}
+
+variable "allowed_app_source_addresses" {
+  description = "CIDRs allowed for TCP 8000. Avoid 0.0.0.0/0 unless intentionally public."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = (
+      length(var.allowed_app_source_addresses) > 0 &&
+      !contains(var.allowed_app_source_addresses, "0.0.0.0/0") &&
+      !contains(var.allowed_app_source_addresses, "::/0")
+    )
+    error_message = "allowed_app_source_addresses must be non-empty and must not use 0.0.0.0/0 or ::/0."
+  }
 }

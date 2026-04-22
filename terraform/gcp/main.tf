@@ -1,3 +1,14 @@
+locals {
+  cost_labels = {
+    environment  = var.environment
+    owner        = var.owner
+    cost_center  = var.cost_center
+    application  = var.application
+    managed_by   = "terraform"
+    project      = var.project_name
+  }
+}
+
 resource "google_compute_network" "lab" {
   name                    = "${var.project_name}-vpc"
   auto_create_subnetworks = true
@@ -34,7 +45,8 @@ resource "google_compute_instance" "lab" {
   machine_type = var.machine_type
   zone         = var.gcp_zone
 
-  tags = [var.project_name]
+  tags   = [var.project_name]
+  labels = local.cost_labels
 
   boot_disk {
     initialize_params {
