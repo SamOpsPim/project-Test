@@ -8,6 +8,11 @@ output "instance_id" {
   value       = aws_instance.lab.id
 }
 
+output "vpc_id" {
+  description = "Dedicated lab VPC ID (managed by this stack)"
+  value       = aws_vpc.lab.id
+}
+
 output "ssh_command" {
   description = "Example SSH (user: ubuntu on official Ubuntu AMI)"
   value       = "ssh -i <your-private-key.pem> ubuntu@${aws_instance.lab.public_ip}"
