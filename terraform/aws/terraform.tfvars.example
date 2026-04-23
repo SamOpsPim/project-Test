@@ -1,5 +1,14 @@
 aws_region        = "eu-west-1"
 project_name      = "cloud-anomaly-lab"
-instance_type     = "t3.micro"
-ssh_cidr_blocks   = ["0.0.0.0/0"] # tighten to your IP, e.g. ["203.0.113.10/32"]
+instance_type     = "t3a.nano"
+# Replace with your office IP or VPN CIDR (never use 0.0.0.0/0)
+ssh_cidr_blocks   = ["203.0.113.10/32"]
+app_cidr_blocks   = ["203.0.113.10/32"]
 public_key        = "ssh-ed25519 AAAA... your-public-key"
+
+cost_allocation_tags = {
+  Environment = "lab"
+  Project     = "cloud-cost-lab"
+  Owner       = "your-team"
+  CostCenter  = "engineering"
+}
