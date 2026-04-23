@@ -1,6 +1,19 @@
+locals {
+  default_tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Owner       = var.owner
+    CostCenter  = var.cost_center
+  }
+}
+
 resource "azurerm_resource_group" "lab" {
   name     = "${var.project_name}-rg"
   location = var.location
+
+  tags = merge(local.default_tags, {
+    Name = "${var.project_name}-rg"
+  })
 }
 
 resource "azurerm_virtual_network" "lab" {
@@ -8,6 +21,10 @@ resource "azurerm_virtual_network" "lab" {
   address_space       = ["10.42.0.0/16"]
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+
+  tags = merge(local.default_tags, {
+    Name = "${var.project_name}-vnet"
+  })
 }
 
 resource "azurerm_subnet" "lab" {
@@ -23,6 +40,10 @@ resource "azurerm_public_ip" "lab" {
   resource_group_name = azurerm_resource_group.lab.name
   allocation_method   = "Static"
   sku                 = "Standard"
+
+  tags = merge(local.default_tags, {
+    Name = "${var.project_name}-pip"
+  })
 }
 
 resource "azurerm_network_security_group" "lab" {
@@ -53,6 +74,10 @@ resource "azurerm_network_security_group" "lab" {
     source_address_prefixes    = var.allowed_source_addresses
     destination_address_prefix = "*"
   }
+
+  tags = merge(local.default_tags, {
+    Name = "${var.project_name}-nsg"
+  })
 }
 
 resource "azurerm_network_interface" "lab" {
@@ -66,10 +91,14 @@ resource "azurerm_network_interface" "lab" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.lab.id
   }
+
+  tags = merge(local.default_tags, {
+    Name = "${var.project_name}-nic"
+  })
 }
 
 resource "azurerm_network_interface_security_group_association" "lab" {
-  network_interface_id    = azurerm_network_interface.lab.id
+  network_interface_id      = azurerm_network_interface.lab.id
   network_security_group_id = azurerm_network_security_group.lab.id
 }
 
@@ -96,7 +125,7 @@ resource "azurerm_linux_virtual_machine" "lab" {
     name                 = "${var.project_name}-os-${random_id.disk.hex}"
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
-    disk_size_gb         = 30
+    disk_size_gb         = var.os_disk_size_gb
   }
 
   source_image_reference {
@@ -107,4 +136,8 @@ resource "azurerm_linux_virtual_machine" "lab" {
   }
 
   disable_password_authentication = true
+
+  tags = merge(local.default_tags, {
+    Name = "${var.project_name}-vm"
+  })
 }
