@@ -39,14 +39,44 @@ variable "ssh_public_key" {
   sensitive   = true
 }
 
-variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+variable "trusted_ingress_cidrs" {
+  description = "Trusted CIDRs for SSH (22) and app (8000). Use your public IP /32 or a trusted range — never 0.0.0.0/0 in production."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  nullable    = false
+
+  validation {
+    condition = length(var.trusted_ingress_cidrs) > 0 && !contains(var.trusted_ingress_cidrs, "0.0.0.0/0") && !contains(var.trusted_ingress_cidrs, "::/0")
+
+    error_message = "trusted_ingress_cidrs must be non-empty and must not allow the entire Internet (0.0.0.0/0 or ::/0)."
+  }
 }
 
-variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
-  type        = list(string)
-  default     = ["0.0.0.0/0"]
+variable "lab_enabled" {
+  description = "Set true only when you intend to deploy this stack. Keeps accidental apply from creating billable resources."
+  type        = bool
+  default     = false
+}
+
+variable "environment" {
+  description = "Environment label for cost allocation"
+  type        = string
+  default     = "lab"
+}
+
+variable "owner" {
+  description = "Owner label for cost allocation"
+  type        = string
+  default     = "unset"
+}
+
+variable "cost_center" {
+  description = "Cost center label for cost allocation"
+  type        = string
+  default     = "engineering"
+}
+
+variable "application" {
+  description = "Application label for cost allocation"
+  type        = string
+  default     = "cloud-anomaly-lab"
 }
