@@ -1,6 +1,17 @@
+locals {
+  # GCP label keys must be lowercase letters, digits, or hyphens only.
+  common_labels = {
+    environment = var.environment
+    owner       = var.owner
+    cost-center = var.cost_center
+    project     = var.project_name
+  }
+}
+
 resource "google_compute_network" "lab" {
   name                    = "${var.project_name}-vpc"
   auto_create_subnetworks = true
+  labels                  = local.common_labels
 }
 
 resource "google_compute_firewall" "ssh" {
@@ -34,7 +45,8 @@ resource "google_compute_instance" "lab" {
   machine_type = var.machine_type
   zone         = var.gcp_zone
 
-  tags = [var.project_name]
+  labels = local.common_labels
+  tags   = [var.project_name]
 
   boot_disk {
     initialize_params {

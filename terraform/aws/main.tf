@@ -1,3 +1,6 @@
+# This stack uses the default VPC and a single instance with a public IP (no NAT gateway here).
+# If VPC line items exceed compute in Cost Explorer, inspect NAT, endpoints, and data transfer.
+
 data "aws_vpc" "default" {
   default = true
 }
@@ -26,6 +29,15 @@ data "aws_ami" "ubuntu" {
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
+  }
+}
+
+locals {
+  common_tags = {
+    Environment = var.environment
+    Owner       = var.owner
+    CostCenter  = var.cost_center
+    Project     = var.project_name
   }
 }
 
