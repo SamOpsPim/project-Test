@@ -4,9 +4,11 @@ Minimal VM stacks for the Cloud Anomaly Lab app (FastAPI on port **8000**, SSH o
 
 | Directory | Provider | Notes |
 |-----------|----------|--------|
-| `aws/` | Amazon Web Services | EC2 `t3.micro`, Ubuntu 22.04, default VPC |
-| `gcp/` | Google Cloud | `e2-micro`, Ubuntu 22.04, firewall for tagged instances |
-| `azure/` | Microsoft Azure | `B1s`, Ubuntu 22.04, NSG allows 22 and 8000 |
+| `aws/` | Amazon Web Services | EC2 `t3.micro`, Ubuntu 22.04, **dedicated VPC** (public subnet + Internet Gateway only, no NAT Gateway) |
+| `gcp/` | Google Cloud | `e2-micro`, Ubuntu 22.04; set **`lab_enabled = true`** to create resources |
+| `azure/` | Microsoft Azure | `B1s`, Ubuntu 22.04; set **`lab_enabled = true`** to create resources |
+
+**Ingress:** All modules require **`trusted_ingress_cidrs`** (or the Azure/GCP equivalent name in tfvars) with specific CIDRs — open Internet (`0.0.0.0/0`) is rejected by variable validation.
 
 After apply, SSH to the instance and run the app (see `../project-Test/deploy/*.md` or your image with Docker).
 

@@ -1,9 +1,17 @@
-gcp_project_id    = "my-gcp-project-id"
-gcp_region        = "europe-west1"
-gcp_zone          = "europe-west1-b"
-project_name      = "cloud-anomaly-lab"
-machine_type      = "e2-micro"
-ssh_user          = "ubuntu"
-ssh_public_key    = "ssh-ed25519 AAAA... your-public-key"
-app_source_ranges = ["0.0.0.0/0"]
-ssh_source_ranges = ["0.0.0.0/0"]
+gcp_project_id          = "my-gcp-project-id"
+gcp_region              = "europe-west1"
+gcp_zone                = "europe-west1-b"
+project_name            = "cloud-anomaly-lab"
+machine_type            = "e2-micro"
+ssh_user                = "ubuntu"
+ssh_public_key          = "ssh-ed25519 AAAA... your-public-key"
+trusted_ingress_cidrs   = ["203.0.113.10/32"] # replace with your public IP or trusted range
+
+# Set true only when you intend to create billable GCP resources
+lab_enabled = true
+
+# Optional FinOps labels (GCP label values: lowercase letters, digits, hyphen, underscore)
+# environment = "lab"
+# owner       = "team-name"
+# cost_center = "engineering"
+# application = "cloud-anomaly-lab"

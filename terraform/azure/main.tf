@@ -1,34 +1,53 @@
+locals {
+  common_tags = {
+    Project     = var.project_name
+    Environment = var.environment
+    Owner       = var.owner
+    CostCenter  = var.cost_center
+    Application = var.application
+  }
+}
+
 resource "azurerm_resource_group" "lab" {
+  count    = var.lab_enabled ? 1 : 0
   name     = "${var.project_name}-rg"
   location = var.location
+  tags     = local.common_tags
 }
 
 resource "azurerm_virtual_network" "lab" {
+  count               = var.lab_enabled ? 1 : 0
   name                = "${var.project_name}-vnet"
   address_space       = ["10.42.0.0/16"]
-  location            = azurerm_resource_group.lab.location
-  resource_group_name = azurerm_resource_group.lab.name
+  location            = azurerm_resource_group.lab[0].location
+  resource_group_name = azurerm_resource_group.lab[0].name
+  tags                = local.common_tags
 }
 
 resource "azurerm_subnet" "lab" {
+  count                = var.lab_enabled ? 1 : 0
   name                 = "${var.project_name}-subnet"
-  resource_group_name  = azurerm_resource_group.lab.name
-  virtual_network_name = azurerm_virtual_network.lab.name
+  resource_group_name  = azurerm_resource_group.lab[0].name
+  virtual_network_name = azurerm_virtual_network.lab[0].name
   address_prefixes     = ["10.42.1.0/24"]
 }
 
 resource "azurerm_public_ip" "lab" {
+  count               = var.lab_enabled ? 1 : 0
   name                = "${var.project_name}-pip"
-  location            = azurerm_resource_group.lab.location
-  resource_group_name = azurerm_resource_group.lab.name
+  location            = azurerm_resource_group.lab[0].location
+  resource_group_name = azurerm_resource_group.lab[0].name
   allocation_method   = "Static"
   sku                 = "Standard"
+  tags                = local.common_tags
 }
 
 resource "azurerm_network_security_group" "lab" {
+  count               = var.lab_enabled ? 1 : 0
   name                = "${var.project_name}-nsg"
-  location            = azurerm_resource_group.lab.location
-  resource_group_name = azurerm_resource_group.lab.name
+  location            = azurerm_resource_group.lab[0].location
+  resource_group_name = azurerm_resource_group.lab[0].name
+  tags                = local.common_tags
 
   security_rule {
     name                       = "SSH"
@@ -38,7 +57,7 @@ resource "azurerm_network_security_group" "lab" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefixes    = var.allowed_source_addresses
+    source_address_prefixes    = var.trusted_ingress_cidrs
     destination_address_prefix = "*"
   }
 
@@ -50,41 +69,48 @@ resource "azurerm_network_security_group" "lab" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "8000"
-    source_address_prefixes    = var.allowed_source_addresses
+    source_address_prefixes    = var.trusted_ingress_cidrs
     destination_address_prefix = "*"
   }
 }
 
 resource "azurerm_network_interface" "lab" {
+  count               = var.lab_enabled ? 1 : 0
   name                = "${var.project_name}-nic"
-  location            = azurerm_resource_group.lab.location
-  resource_group_name = azurerm_resource_group.lab.name
+  location            = azurerm_resource_group.lab[0].location
+  resource_group_name = azurerm_resource_group.lab[0].name
+  tags                = local.common_tags
 
   ip_configuration {
     name                          = "primary"
-    subnet_id                     = azurerm_subnet.lab.id
+    subnet_id                     = azurerm_subnet.lab[0].id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.lab.id
+    public_ip_address_id          = azurerm_public_ip.lab[0].id
   }
 }
 
 resource "azurerm_network_interface_security_group_association" "lab" {
-  network_interface_id    = azurerm_network_interface.lab.id
-  network_security_group_id = azurerm_network_security_group.lab.id
+  count                     = var.lab_enabled ? 1 : 0
+  network_interface_id      = azurerm_network_interface.lab[0].id
+  network_security_group_id = azurerm_network_security_group.lab[0].id
 }
 
 resource "random_id" "disk" {
+  count       = var.lab_enabled ? 1 : 0
   byte_length = 4
 }
 
 resource "azurerm_linux_virtual_machine" "lab" {
+  count               = var.lab_enabled ? 1 : 0
   name                = "${var.project_name}-vm"
-  location            = azurerm_resource_group.lab.location
-  resource_group_name = azurerm_resource_group.lab.name
+  location            = azurerm_resource_group.lab[0].location
+  resource_group_name = azurerm_resource_group.lab[0].name
   size                = var.vm_size
   admin_username      = var.admin_username
+  tags                = local.common_tags
+
   network_interface_ids = [
-    azurerm_network_interface.lab.id,
+    azurerm_network_interface.lab[0].id,
   ]
 
   admin_ssh_key {
@@ -93,7 +119,7 @@ resource "azurerm_linux_virtual_machine" "lab" {
   }
 
   os_disk {
-    name                 = "${var.project_name}-os-${random_id.disk.hex}"
+    name                 = "${var.project_name}-os-${random_id.disk[0].hex}"
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
     disk_size_gb         = 30
