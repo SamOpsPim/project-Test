@@ -2,7 +2,7 @@
 
 ## 1) Recommended VM Size
 
-- Instance type: `t3.micro` (or `t2.micro`)
+- Instance type: `t3a.nano` for light lab cost (or `t3.micro` if you need more burst)
 - OS: Ubuntu 22.04 LTS
 
 ## 2) Open Port 8000
@@ -10,7 +10,9 @@
 In the EC2 Security Group, add inbound rule:
 - Type: Custom TCP
 - Port: `8000`
-- Source: your IP (recommended for lab) or `0.0.0.0/0` (open)
+- Source: your IP or VPN CIDR only (do not use `0.0.0.0/0`)
+
+The Terraform module in `terraform/aws/` provisions a **dedicated VPC** (not the account default VPC) so lab networking is isolated and easier to reason about in billing.
 
 ## 3) SSH to VM
 
