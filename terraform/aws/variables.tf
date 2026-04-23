@@ -17,9 +17,26 @@ variable "instance_type" {
 }
 
 variable "ssh_cidr_blocks" {
-  description = "CIDRs allowed for SSH and app port (restrict in production)"
+  description = "CIDRs allowed for SSH and app port 8000. Do not use 0.0.0.0/0 in production; use your VPN or /32 admin IPs."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+}
+
+variable "environment" {
+  description = "Environment label for cost allocation (e.g. dev, staging, prod)"
+  type        = string
+  default     = "lab"
+}
+
+variable "owner" {
+  description = "Owner label for cost allocation (team or contact)"
+  type        = string
+  default     = "platform"
+}
+
+variable "cost_center" {
+  description = "Cost center for chargeback and FinOps reporting"
+  type        = string
+  default     = "engineering"
 }
 
 variable "public_key" {

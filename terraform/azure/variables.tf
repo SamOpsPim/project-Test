@@ -29,7 +29,24 @@ variable "ssh_public_key" {
 }
 
 variable "allowed_source_addresses" {
-  description = "CIDRs allowed for SSH and port 8000 (use /32 for your IP in production)"
+  description = "CIDRs allowed for SSH and port 8000. Required; use VPN or /32 IPs—never 0.0.0.0/0 for production."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+}
+
+variable "environment" {
+  description = "Environment label for cost allocation (e.g. dev, staging, prod)"
+  type        = string
+  default     = "lab"
+}
+
+variable "owner" {
+  description = "Owner label for cost allocation (team or contact)"
+  type        = string
+  default     = "platform"
+}
+
+variable "cost_center" {
+  description = "Cost center for chargeback and FinOps reporting"
+  type        = string
+  default     = "engineering"
 }

@@ -40,13 +40,29 @@ variable "ssh_public_key" {
 }
 
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "CIDRs allowed to reach port 8000. Required; avoid 0.0.0.0/0 in production."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "CIDRs allowed for SSH. Required; avoid 0.0.0.0/0 in production."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+}
+
+variable "environment" {
+  description = "Environment label for cost allocation (e.g. dev, staging, prod)"
+  type        = string
+  default     = "lab"
+}
+
+variable "owner" {
+  description = "Owner label for cost allocation (team or contact)"
+  type        = string
+  default     = "platform"
+}
+
+variable "cost_center" {
+  description = "Cost center for chargeback and FinOps reporting"
+  type        = string
+  default     = "engineering"
 }
