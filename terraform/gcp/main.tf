@@ -1,3 +1,13 @@
+locals {
+  # GCP label values: lowercase letters, numerals, hyphens; max 63 chars
+  finops_labels = {
+    environment = lower(replace(var.environment, "_", "-"))
+    project     = lower(replace(var.project_name, "_", "-"))
+    owner       = lower(replace(var.owner, "_", "-"))
+    cost_center = lower(replace(var.cost_center, "_", "-"))
+  }
+}
+
 resource "google_compute_network" "lab" {
   name                    = "${var.project_name}-vpc"
   auto_create_subnetworks = true
@@ -36,10 +46,12 @@ resource "google_compute_instance" "lab" {
 
   tags = [var.project_name]
 
+  labels = local.finops_labels
+
   boot_disk {
     initialize_params {
       image = "ubuntu-os-cloud/ubuntu-2204-lts"
-      size  = 20
+      size  = var.boot_disk_size_gb
       type  = "pd-balanced"
     }
   }
