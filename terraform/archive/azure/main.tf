@@ -1,6 +1,15 @@
+locals {
+  azure_cost_tags = {
+    Environment = var.tag_environment
+    Project       = var.tag_project != "" ? var.tag_project : var.project_name
+    Owner         = var.tag_owner
+  }
+}
+
 resource "azurerm_resource_group" "lab" {
   name     = "${var.project_name}-rg"
   location = var.location
+  tags     = local.azure_cost_tags
 }
 
 resource "azurerm_virtual_network" "lab" {
@@ -8,6 +17,7 @@ resource "azurerm_virtual_network" "lab" {
   address_space       = ["10.42.0.0/16"]
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = local.azure_cost_tags
 }
 
 resource "azurerm_subnet" "lab" {
@@ -23,12 +33,14 @@ resource "azurerm_public_ip" "lab" {
   resource_group_name = azurerm_resource_group.lab.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  tags                = local.azure_cost_tags
 }
 
 resource "azurerm_network_security_group" "lab" {
   name                = "${var.project_name}-nsg"
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = local.azure_cost_tags
 
   security_rule {
     name                       = "SSH"
@@ -59,6 +71,7 @@ resource "azurerm_network_interface" "lab" {
   name                = "${var.project_name}-nic"
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = local.azure_cost_tags
 
   ip_configuration {
     name                          = "primary"
@@ -107,4 +120,6 @@ resource "azurerm_linux_virtual_machine" "lab" {
   }
 
   disable_password_authentication = true
+
+  tags = local.azure_cost_tags
 }
