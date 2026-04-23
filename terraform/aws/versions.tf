@@ -11,4 +11,12 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
+
+  default_tags {
+    tags = {
+      Environment = var.tag_environment
+      Project     = var.tag_project != "" ? var.tag_project : var.project_name
+      Owner       = var.tag_owner
+    }
+  }
 }

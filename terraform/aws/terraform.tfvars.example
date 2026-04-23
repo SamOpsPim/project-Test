@@ -1,5 +1,17 @@
 aws_region        = "eu-west-1"
 project_name      = "cloud-anomaly-lab"
-instance_type     = "t3.micro"
-ssh_cidr_blocks   = ["0.0.0.0/0"] # tighten to your IP, e.g. ["203.0.113.10/32"]
+instance_type     = "t3.nano"
+# Required: your public IP or VPN CIDR only (0.0.0.0/0 is rejected by Terraform)
+ssh_cidr_blocks   = ["203.0.113.10/32"]
 public_key        = "ssh-ed25519 AAAA... your-public-key"
+
+# Cost allocation (also applied via provider default_tags on supported resources)
+tag_environment = "dev"
+tag_project     = "CloudAnomalyLab"
+tag_owner       = "your-team"
+
+# Optional: nightly stop / morning start (UTC by default) — set true to enable
+# enable_instance_schedule      = true
+# instance_stop_schedule        = "cron(0 20 * * ? *)"
+# instance_start_schedule       = "cron(0 8 * * ? *)"
+# instance_schedule_timezone    = "UTC"

@@ -29,14 +29,22 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+locals {
+  name_prefix = var.project_name
+}
+
 resource "aws_key_pair" "lab" {
-  key_name   = "${var.project_name}-key"
+  key_name   = "${local.name_prefix}-key"
   public_key = var.public_key
+
+  tags = {
+    Name = "${local.name_prefix}-key"
+  }
 }
 
 resource "aws_security_group" "lab" {
-  name        = "${var.project_name}-sg"
-  description = "SSH + app port 8000"
+  name        = "${local.name_prefix}-sg"
+  description = "SSH + app port 8000 (restricted ingress)"
 
   ingress {
     description = "SSH"
@@ -55,6 +63,7 @@ resource "aws_security_group" "lab" {
   }
 
   egress {
+    description = "All outbound"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -62,7 +71,7 @@ resource "aws_security_group" "lab" {
   }
 
   tags = {
-    Name = "${var.project_name}-sg"
+    Name = "${local.name_prefix}-sg"
   }
 }
 
@@ -80,6 +89,6 @@ resource "aws_instance" "lab" {
   }
 
   tags = {
-    Name = "${var.project_name}-vm"
+    Name = "${local.name_prefix}-vm"
   }
 }

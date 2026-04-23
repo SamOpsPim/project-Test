@@ -2,7 +2,7 @@
 
 ## 1) Recommended VM Size
 
-- Instance type: `t3.micro` (or `t2.micro`)
+- Terraform default: `t3.nano` (lower cost than `t3.micro` for the same lab workload).
 - OS: Ubuntu 22.04 LTS
 
 ## 2) Open Port 8000
@@ -10,7 +10,9 @@
 In the EC2 Security Group, add inbound rule:
 - Type: Custom TCP
 - Port: `8000`
-- Source: your IP (recommended for lab) or `0.0.0.0/0` (open)
+- Source: **your IP or VPN CIDR only** (do not use `0.0.0.0/0` on the public internet).
+
+If you use the Terraform under `terraform/aws/`, set `ssh_cidr_blocks` in `terraform.tfvars` to that same trusted range; open-world CIDRs are blocked by validation. Optional: set `enable_instance_schedule = true` for automatic stop/start windows to reduce compute when the lab is idle.
 
 ## 3) SSH to VM
 
