@@ -40,13 +40,13 @@ variable "ssh_public_key" {
 }
 
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "CIDRs allowed to reach port 8000. Override with trusted ranges; default is localhost-only until set."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = ["127.0.0.1/32"]
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "CIDRs allowed for SSH. Override with trusted ranges; default is localhost-only until set."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = ["127.0.0.1/32"]
 }
