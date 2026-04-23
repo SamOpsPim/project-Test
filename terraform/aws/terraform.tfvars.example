@@ -1,5 +1,15 @@
-aws_region        = "eu-west-1"
-project_name      = "cloud-anomaly-lab"
-instance_type     = "t3.micro"
-ssh_cidr_blocks   = ["0.0.0.0/0"] # tighten to your IP, e.g. ["203.0.113.10/32"]
-public_key        = "ssh-ed25519 AAAA... your-public-key"
+aws_region            = "eu-west-1"
+project_name          = "cloud-anomaly-lab"
+instance_type         = "t3.micro"
+trusted_ingress_cidrs = ["203.0.113.10/32"] # replace with your public IP or trusted range
+public_key            = "ssh-ed25519 AAAA... your-public-key"
+
+# Optional FinOps tags
+# environment   = "lab"
+# owner         = "team-name"
+# cost_center   = "engineering"
+# application   = "cloud-anomaly-lab"
+
+# Optional network sizing (defaults avoid default VPC / surprise NAT costs)
+# vpc_cidr           = "10.0.0.0/16"
+# public_subnet_cidr = "10.0.1.0/24"
