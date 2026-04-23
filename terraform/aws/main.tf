@@ -1,3 +1,13 @@
+locals {
+  default_tags = {
+    Name        = "${var.project_name}-lab"
+    Environment = var.environment
+    Project     = var.project_name
+    Owner       = var.owner
+    CostCenter  = var.cost_center
+  }
+}
+
 data "aws_vpc" "default" {
   default = true
 }
@@ -32,6 +42,10 @@ data "aws_ami" "ubuntu" {
 resource "aws_key_pair" "lab" {
   key_name   = "${var.project_name}-key"
   public_key = var.public_key
+
+  tags = merge(local.default_tags, {
+    Name = "${var.project_name}-key"
+  })
 }
 
 resource "aws_security_group" "lab" {
@@ -61,9 +75,9 @@ resource "aws_security_group" "lab" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.default_tags, {
     Name = "${var.project_name}-sg"
-  }
+  })
 }
 
 resource "aws_instance" "lab" {
@@ -75,11 +89,11 @@ resource "aws_instance" "lab" {
   associate_public_ip_address = true
 
   root_block_device {
-    volume_size = 20
+    volume_size = var.root_volume_gb
     volume_type = "gp3"
   }
 
-  tags = {
+  tags = merge(local.default_tags, {
     Name = "${var.project_name}-vm"
-  }
+  })
 }
