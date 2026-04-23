@@ -93,6 +93,10 @@ resource "aws_instance" "lab" {
     volume_type = "gp3"
   }
 
+  volume_tags = merge(local.default_tags, {
+    Name = "${var.project_name}-root"
+  })
+
   tags = merge(local.default_tags, {
     Name = "${var.project_name}-vm"
   })
