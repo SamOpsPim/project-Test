@@ -29,7 +29,7 @@ variable "ssh_public_key" {
 }
 
 variable "allowed_source_addresses" {
-  description = "CIDRs allowed for SSH and port 8000 (use /32 for your IP in production)"
+  description = "CIDRs allowed for SSH and port 8000. Override with trusted ranges (e.g. 203.0.113.10/32); default is localhost-only until set."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = ["127.0.0.1/32"]
 }
