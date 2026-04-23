@@ -1,3 +1,12 @@
+locals {
+  # GCP label values must be lowercase letters, digits, hyphens, or underscores.
+  gcp_cost_labels = {
+    environment = lower(replace(var.tag_environment, " ", "-"))
+    project       = lower(replace(var.tag_project != "" ? var.tag_project : var.project_name, " ", "-"))
+    owner         = lower(replace(var.tag_owner, " ", "-"))
+  }
+}
+
 resource "google_compute_network" "lab" {
   name                    = "${var.project_name}-vpc"
   auto_create_subnetworks = true
@@ -34,7 +43,8 @@ resource "google_compute_instance" "lab" {
   machine_type = var.machine_type
   zone         = var.gcp_zone
 
-  tags = [var.project_name]
+  tags   = [var.project_name]
+  labels = local.gcp_cost_labels
 
   boot_disk {
     initialize_params {

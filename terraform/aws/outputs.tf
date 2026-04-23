@@ -12,3 +12,8 @@ output "ssh_command" {
   description = "Example SSH (user: ubuntu on official Ubuntu AMI)"
   value       = "ssh -i <your-private-key.pem> ubuntu@${aws_instance.lab.public_ip}"
 }
+
+output "instance_schedule_enabled" {
+  description = "Whether EventBridge Scheduler stop/start is enabled for this instance"
+  value       = var.enable_instance_schedule
+}
