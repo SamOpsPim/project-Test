@@ -1,6 +1,7 @@
 resource "azurerm_resource_group" "lab" {
   name     = "${var.project_name}-rg"
   location = var.location
+  tags     = var.cost_allocation_tags
 }
 
 resource "azurerm_virtual_network" "lab" {
@@ -8,6 +9,7 @@ resource "azurerm_virtual_network" "lab" {
   address_space       = ["10.42.0.0/16"]
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = var.cost_allocation_tags
 }
 
 resource "azurerm_subnet" "lab" {
@@ -23,12 +25,14 @@ resource "azurerm_public_ip" "lab" {
   resource_group_name = azurerm_resource_group.lab.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  tags                = var.cost_allocation_tags
 }
 
 resource "azurerm_network_security_group" "lab" {
   name                = "${var.project_name}-nsg"
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = var.cost_allocation_tags
 
   security_rule {
     name                       = "SSH"
@@ -59,6 +63,7 @@ resource "azurerm_network_interface" "lab" {
   name                = "${var.project_name}-nic"
   location            = azurerm_resource_group.lab.location
   resource_group_name = azurerm_resource_group.lab.name
+  tags                = var.cost_allocation_tags
 
   ip_configuration {
     name                          = "primary"
@@ -107,4 +112,5 @@ resource "azurerm_linux_virtual_machine" "lab" {
   }
 
   disable_password_authentication = true
+  tags                            = var.cost_allocation_tags
 }

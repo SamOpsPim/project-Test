@@ -29,7 +29,23 @@ variable "ssh_public_key" {
 }
 
 variable "allowed_source_addresses" {
-  description = "CIDRs allowed for SSH and port 8000 (use /32 for your IP in production)"
+  description = "CIDRs allowed for SSH and port 8000. Replace the default documentation placeholder (203.0.113.10/32) with your trusted IPs or ranges before apply."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = ["203.0.113.10/32"]
+
+  validation {
+    condition     = length([for c in var.allowed_source_addresses : c if c == "0.0.0.0/0"]) == 0
+    error_message = "allowed_source_addresses must not include 0.0.0.0/0; use specific trusted CIDRs only."
+  }
+}
+
+variable "cost_allocation_tags" {
+  description = "Tags on Azure resources for cost allocation (FinOps)."
+  type        = map(string)
+  default = {
+    Environment = "lab"
+    Owner       = "unset"
+    Project     = "cloud-anomaly-lab"
+    CostCenter  = "unset"
+  }
 }
