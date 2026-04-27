@@ -1,5 +1,10 @@
-aws_region        = "eu-west-1"
-project_name      = "cloud-anomaly-lab"
-instance_type     = "t3.micro"
-ssh_cidr_blocks   = ["0.0.0.0/0"] # tighten to your IP, e.g. ["203.0.113.10/32"]
-public_key        = "ssh-ed25519 AAAA... your-public-key"
+aws_region          = "eu-west-1"
+project_name        = "cloud-anomaly-lab"
+environment         = "development"
+owner               = "platform-team"
+cost_center         = "engineering"
+instance_type       = "t3.micro"
+root_volume_size_gb = 16
+# Never use 0.0.0.0/0 for SSH or the app; set your public IP /32 or VPN CIDR.
+ssh_cidr_blocks     = ["203.0.113.10/32"]
+public_key          = "ssh-ed25519 AAAA... your-public-key"

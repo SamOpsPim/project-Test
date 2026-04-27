@@ -1,3 +1,13 @@
+locals {
+  common_labels = {
+    environment = var.environment
+    project     = var.project_name
+    owner       = var.owner
+    cost_center = var.cost_center
+    managed_by  = "terraform"
+  }
+}
+
 resource "google_compute_network" "lab" {
   name                    = "${var.project_name}-vpc"
   auto_create_subnetworks = true
@@ -39,7 +49,7 @@ resource "google_compute_instance" "lab" {
   boot_disk {
     initialize_params {
       image = "ubuntu-os-cloud/ubuntu-2204-lts"
-      size  = 20
+      size  = var.boot_disk_size_gb
       type  = "pd-balanced"
     }
   }
@@ -57,4 +67,6 @@ resource "google_compute_instance" "lab" {
     preemptible       = false
     automatic_restart = true
   }
+
+  labels = local.common_labels
 }

@@ -1,3 +1,13 @@
+locals {
+  common_tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Owner       = var.owner
+    CostCenter  = var.cost_center
+    ManagedBy   = "terraform"
+  }
+}
+
 data "aws_vpc" "default" {
   default = true
 }
@@ -61,9 +71,9 @@ resource "aws_security_group" "lab" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${var.project_name}-sg"
-  }
+  })
 }
 
 resource "aws_instance" "lab" {
@@ -73,13 +83,14 @@ resource "aws_instance" "lab" {
   subnet_id                   = data.aws_subnets.default.ids[0]
   vpc_security_group_ids      = [aws_security_group.lab.id]
   associate_public_ip_address = true
+  monitoring                  = true
 
   root_block_device {
-    volume_size = 20
+    volume_size = var.root_volume_size_gb
     volume_type = "gp3"
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${var.project_name}-vm"
-  }
+  })
 }
