@@ -40,13 +40,45 @@ variable "ssh_public_key" {
 }
 
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "CIDRs allowed to reach port 8000 (required; never use 0.0.0.0/0)"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = length(var.app_source_ranges) > 0 && !contains(var.app_source_ranges, "0.0.0.0/0") && !contains(var.app_source_ranges, "::/0")
+    error_message = "app_source_ranges must be non-empty and must not use 0.0.0.0/0 or ::/0 (open internet)."
+  }
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "CIDRs allowed for SSH (required; never use 0.0.0.0/0)"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = length(var.ssh_source_ranges) > 0 && !contains(var.ssh_source_ranges, "0.0.0.0/0") && !contains(var.ssh_source_ranges, "::/0")
+    error_message = "ssh_source_ranges must be non-empty and must not use 0.0.0.0/0 or ::/0 (open internet)."
+  }
+}
+
+variable "environment" {
+  description = "Environment label for cost allocation (lowercase; GCP label rules)"
+  type        = string
+  default     = "lab"
+}
+
+variable "owner" {
+  description = "Owner label for cost allocation"
+  type        = string
+  default     = "unset"
+}
+
+variable "cost_center" {
+  description = "Cost center label for FinOps chargeback"
+  type        = string
+  default     = "unset"
+}
+
+variable "additional_labels" {
+  description = "Extra labels merged with provider default_labels (keys must satisfy GCP label rules: lowercase, etc.)"
+  type        = map(string)
+  default     = {}
 }
