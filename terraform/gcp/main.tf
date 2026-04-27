@@ -16,8 +16,6 @@ resource "google_compute_firewall" "ssh" {
 
   source_ranges = var.ssh_source_ranges
   target_tags   = [var.project_name]
-
-  labels = var.cost_allocation_labels
 }
 
 resource "google_compute_firewall" "app" {
@@ -31,8 +29,6 @@ resource "google_compute_firewall" "app" {
 
   source_ranges = var.app_source_ranges
   target_tags   = [var.project_name]
-
-  labels = var.cost_allocation_labels
 }
 
 resource "google_compute_instance" "lab" {
