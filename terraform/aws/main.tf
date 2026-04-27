@@ -1,3 +1,15 @@
+locals {
+  cost_tags = merge(
+    {
+      Environment = var.environment
+      Owner       = var.owner
+      CostCenter  = var.cost_center
+      Project     = var.project_name
+    },
+    var.additional_tags,
+  )
+}
+
 data "aws_vpc" "default" {
   default = true
 }
@@ -32,6 +44,8 @@ data "aws_ami" "ubuntu" {
 resource "aws_key_pair" "lab" {
   key_name   = "${var.project_name}-key"
   public_key = var.public_key
+
+  tags = merge(local.cost_tags, { Name = "${var.project_name}-key" })
 }
 
 resource "aws_security_group" "lab" {
@@ -43,7 +57,7 @@ resource "aws_security_group" "lab" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = var.ssh_cidr_blocks
+    cidr_blocks = var.trusted_cidr_blocks_ssh
   }
 
   ingress {
@@ -51,7 +65,7 @@ resource "aws_security_group" "lab" {
     from_port   = 8000
     to_port     = 8000
     protocol    = "tcp"
-    cidr_blocks = var.ssh_cidr_blocks
+    cidr_blocks = var.trusted_cidr_blocks_app
   }
 
   egress {
@@ -61,9 +75,7 @@ resource "aws_security_group" "lab" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "${var.project_name}-sg"
-  }
+  tags = merge(local.cost_tags, { Name = "${var.project_name}-sg" })
 }
 
 resource "aws_instance" "lab" {
@@ -79,7 +91,91 @@ resource "aws_instance" "lab" {
     volume_type = "gp3"
   }
 
-  tags = {
-    Name = "${var.project_name}-vm"
+  tags = merge(local.cost_tags, { Name = "${var.project_name}-vm" })
+}
+
+data "aws_iam_policy_document" "scheduler_assume" {
+  count = var.enable_instance_schedule ? 1 : 0
+
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["scheduler.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "lab_scheduler" {
+  count = var.enable_instance_schedule ? 1 : 0
+
+  name               = "${var.project_name}-scheduler"
+  assume_role_policy = data.aws_iam_policy_document.scheduler_assume[0].json
+
+  tags = merge(local.cost_tags, { Name = "${var.project_name}-scheduler-role" })
+}
+
+resource "aws_iam_role_policy" "lab_scheduler_ec2" {
+  count = var.enable_instance_schedule ? 1 : 0
+
+  name = "${var.project_name}-scheduler-ec2"
+  role = aws_iam_role.lab_scheduler[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:StopInstances",
+          "ec2:StartInstances",
+        ]
+        Resource = aws_instance.lab.arn
+      },
+    ]
+  })
+}
+
+resource "aws_scheduler_schedule" "lab_stop" {
+  count = var.enable_instance_schedule ? 1 : 0
+
+  name       = "${var.project_name}-stop-weekdays"
+  group_name = "default"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression          = var.instance_stop_schedule
+  schedule_expression_timezone = var.instance_schedule_timezone
+
+  target {
+    arn      = "arn:aws:scheduler:::aws-sdk:ec2:stopInstances"
+    role_arn = aws_iam_role.lab_scheduler[0].arn
+    input = jsonencode({
+      InstanceIds = [aws_instance.lab.id]
+    })
+  }
+}
+
+resource "aws_scheduler_schedule" "lab_start" {
+  count = var.enable_instance_schedule ? 1 : 0
+
+  name       = "${var.project_name}-start-weekdays"
+  group_name = "default"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression          = var.instance_start_schedule
+  schedule_expression_timezone = var.instance_schedule_timezone
+
+  target {
+    arn      = "arn:aws:scheduler:::aws-sdk:ec2:startInstances"
+    role_arn = aws_iam_role.lab_scheduler[0].arn
+    input = jsonencode({
+      InstanceIds = [aws_instance.lab.id]
+    })
   }
 }

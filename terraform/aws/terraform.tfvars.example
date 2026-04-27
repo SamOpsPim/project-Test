@@ -1,5 +1,19 @@
 aws_region        = "eu-west-1"
 project_name      = "cloud-anomaly-lab"
 instance_type     = "t3.micro"
-ssh_cidr_blocks   = ["0.0.0.0/0"] # tighten to your IP, e.g. ["203.0.113.10/32"]
-public_key        = "ssh-ed25519 AAAA... your-public-key"
+
+# Required: your public IP or office range only (never 0.0.0.0/0)
+trusted_cidr_blocks_ssh = ["203.0.113.10/32"]
+trusted_cidr_blocks_app = ["203.0.113.10/32"]
+
+environment = "lab"
+owner       = "team-name"
+cost_center = "engineering"
+
+# Optional: weekday stop/start in UTC (disable for 24/7 lab)
+enable_instance_schedule     = true
+instance_stop_schedule       = "cron(0 19 ? * MON-FRI *)"
+instance_start_schedule      = "cron(0 7 ? * MON-FRI *)"
+instance_schedule_timezone   = "UTC"
+
+public_key = "ssh-ed25519 AAAA... your-public-key"
