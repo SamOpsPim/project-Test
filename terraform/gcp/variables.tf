@@ -40,13 +40,34 @@ variable "ssh_public_key" {
 }
 
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "CIDRs allowed to reach port 8000. Replace default placeholder with your trusted CIDRs before apply."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = ["203.0.113.10/32"]
+
+  validation {
+    condition     = length([for c in var.app_source_ranges : c if c == "0.0.0.0/0"]) == 0
+    error_message = "app_source_ranges must not include 0.0.0.0/0; use specific trusted CIDRs only."
+  }
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "CIDRs allowed for SSH. Replace default placeholder with your trusted CIDRs before apply."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = ["203.0.113.10/32"]
+
+  validation {
+    condition     = length([for c in var.ssh_source_ranges : c if c == "0.0.0.0/0"]) == 0
+    error_message = "ssh_source_ranges must not include 0.0.0.0/0; use specific trusted CIDRs only."
+  }
+}
+
+variable "cost_allocation_labels" {
+  description = "Labels on GCP resources for cost allocation (FinOps). Keys must be lowercase letters, digits, or underscores."
+  type        = map(string)
+  default = {
+    environment = "lab"
+    owner       = "unset"
+    project     = "cloud-anomaly-lab"
+    cost_center = "unset"
+  }
 }

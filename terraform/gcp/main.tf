@@ -1,6 +1,8 @@
 resource "google_compute_network" "lab" {
   name                    = "${var.project_name}-vpc"
   auto_create_subnetworks = true
+
+  labels = var.cost_allocation_labels
 }
 
 resource "google_compute_firewall" "ssh" {
@@ -34,7 +36,8 @@ resource "google_compute_instance" "lab" {
   machine_type = var.machine_type
   zone         = var.gcp_zone
 
-  tags = [var.project_name]
+  tags   = [var.project_name]
+  labels = var.cost_allocation_labels
 
   boot_disk {
     initialize_params {

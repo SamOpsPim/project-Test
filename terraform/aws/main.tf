@@ -1,3 +1,5 @@
+# Default VPC has no NAT in this stack; unexplained "Amazon VPC" line items in Cost Explorer
+# are often NAT Gateway hourly/GB, interface endpoints, or data transfer—review usage types there.
 data "aws_vpc" "default" {
   default = true
 }
@@ -32,6 +34,10 @@ data "aws_ami" "ubuntu" {
 resource "aws_key_pair" "lab" {
   key_name   = "${var.project_name}-key"
   public_key = var.public_key
+
+  tags = merge(var.cost_allocation_tags, {
+    Name = "${var.project_name}-key"
+  })
 }
 
 resource "aws_security_group" "lab" {
@@ -61,9 +67,9 @@ resource "aws_security_group" "lab" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(var.cost_allocation_tags, {
     Name = "${var.project_name}-sg"
-  }
+  })
 }
 
 resource "aws_instance" "lab" {
@@ -79,7 +85,7 @@ resource "aws_instance" "lab" {
     volume_type = "gp3"
   }
 
-  tags = {
+  tags = merge(var.cost_allocation_tags, {
     Name = "${var.project_name}-vm"
-  }
+  })
 }
