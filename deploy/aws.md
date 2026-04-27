@@ -7,10 +7,7 @@
 
 ## 2) Open Port 8000
 
-In the EC2 Security Group, add inbound rule:
-- Type: Custom TCP
-- Port: `8000`
-- Source: your IP (recommended for lab) or `0.0.0.0/0` (open)
+Terraform sets port `8000` and SSH to the CIDRs in `trusted_cidr_blocks_app` and `trusted_cidr_blocks_ssh` (see `terraform/aws/terraform.tfvars.example`). Do not use `0.0.0.0/0`; restrict to your public IP (for example `x.x.x.x/32`).
 
 ## 3) SSH to VM
 
