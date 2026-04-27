@@ -28,8 +28,31 @@ variable "ssh_public_key" {
   sensitive   = true
 }
 
+variable "environment" {
+  description = "Deployment environment (cost allocation tag)"
+  type        = string
+  default     = "development"
+}
+
+variable "owner" {
+  description = "Team or owner contact (cost allocation tag)"
+  type        = string
+  default     = "unassigned"
+}
+
+variable "cost_center" {
+  description = "Cost center or chargeback code"
+  type        = string
+  default     = "unassigned"
+}
+
 variable "allowed_source_addresses" {
-  description = "CIDRs allowed for SSH and port 8000 (use /32 for your IP in production)"
+  description = "CIDRs allowed for SSH and port 8000. Must not be open internet; use e.g. [\"203.0.113.10/32\"] or your VPN range."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = ["10.0.0.0/8"]
+
+  validation {
+    condition = length(var.allowed_source_addresses) > 0 && !contains(var.allowed_source_addresses, "0.0.0.0/0") && !contains(var.allowed_source_addresses, "*") && !contains(var.allowed_source_addresses, "Internet") && !contains(var.allowed_source_addresses, "::/0")
+    error_message = "allowed_source_addresses must be non-empty and must not use open internet (0.0.0.0/0, ::/0), \"*\", or \"Internet\"."
+  }
 }

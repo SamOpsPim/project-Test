@@ -39,14 +39,53 @@ variable "ssh_public_key" {
   sensitive   = true
 }
 
+variable "environment" {
+  description = "Deployment environment (cost allocation label)"
+  type        = string
+  default     = "development"
+}
+
+variable "owner" {
+  description = "Team or owner contact (cost allocation label)"
+  type        = string
+  default     = "unassigned"
+}
+
+variable "cost_center" {
+  description = "Cost center or chargeback code"
+  type        = string
+  default     = "unassigned"
+}
+
+variable "boot_disk_size_gb" {
+  description = "Boot disk size in GB (rightsizing: align with workload needs)"
+  type        = number
+  default     = 16
+
+  validation {
+    condition     = var.boot_disk_size_gb >= 10 && var.boot_disk_size_gb <= 65536
+    error_message = "boot_disk_size_gb must be between 10 and 65536."
+  }
+}
+
 variable "app_source_ranges" {
-  description = "CIDRs allowed to reach port 8000"
+  description = "CIDRs allowed to reach port 8000. Must not be open internet; use IAP or known ranges."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = ["10.0.0.0/8"]
+
+  validation {
+    condition = length(var.app_source_ranges) > 0 && !contains(var.app_source_ranges, "0.0.0.0/0") && !contains(var.app_source_ranges, "::/0")
+    error_message = "app_source_ranges must be non-empty and must not include 0.0.0.0/0 or ::/0."
+  }
 }
 
 variable "ssh_source_ranges" {
-  description = "CIDRs allowed for SSH"
+  description = "CIDRs allowed for SSH. Must not be open internet; prefer IAP TCP forwarding ranges or known admin CIDRs."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = ["10.0.0.0/8"]
+
+  validation {
+    condition = length(var.ssh_source_ranges) > 0 && !contains(var.ssh_source_ranges, "0.0.0.0/0") && !contains(var.ssh_source_ranges, "::/0")
+    error_message = "ssh_source_ranges must be non-empty and must not include 0.0.0.0/0 or ::/0."
+  }
 }
