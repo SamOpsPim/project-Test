@@ -10,7 +10,7 @@
 In the EC2 Security Group, add inbound rule:
 - Type: Custom TCP
 - Port: `8000`
-- Source: your IP (recommended for lab) or `0.0.0.0/0` (open)
+- Source: your public IP or office CIDR only (match `ssh_cidr_blocks` in Terraform; do not use open internet)
 
 ## 3) SSH to VM
 

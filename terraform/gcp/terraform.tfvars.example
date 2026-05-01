@@ -5,5 +5,6 @@ project_name      = "cloud-anomaly-lab"
 machine_type      = "e2-micro"
 ssh_user          = "ubuntu"
 ssh_public_key    = "ssh-ed25519 AAAA... your-public-key"
-app_source_ranges = ["0.0.0.0/0"]
-ssh_source_ranges = ["0.0.0.0/0"]
+# Required: trusted CIDRs only (0.0.0.0/0 is rejected by variable validation).
+app_source_ranges   = ["203.0.113.10/32"]
+ssh_source_ranges   = ["203.0.113.10/32"]

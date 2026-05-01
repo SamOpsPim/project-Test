@@ -10,6 +10,18 @@ variable "project_name" {
   default     = "cloud-anomaly-lab"
 }
 
+variable "environment" {
+  description = "Environment tag for cost allocation"
+  type        = string
+  default     = "dev"
+}
+
+variable "owner" {
+  description = "Owner tag for cost allocation"
+  type        = string
+  default     = "finops-team"
+}
+
 variable "vm_size" {
   description = "Azure VM size"
   type        = string
@@ -29,7 +41,15 @@ variable "ssh_public_key" {
 }
 
 variable "allowed_source_addresses" {
-  description = "CIDRs allowed for SSH and port 8000 (use /32 for your IP in production)"
+  description = "Trusted CIDRs for SSH and port 8000 (e.g. [\"203.0.113.10/32\"]). Set in terraform.tfvars; open internet CIDRs are rejected."
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
+
+  validation {
+    condition = length(var.allowed_source_addresses) > 0 && length([
+      for c in var.allowed_source_addresses : c
+      if c == "0.0.0.0/0" || c == "::/0"
+    ]) == 0
+    error_message = "allowed_source_addresses must be non-empty and must not use 0.0.0.0/0 or ::/0."
+  }
 }
